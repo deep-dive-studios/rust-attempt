@@ -3,12 +3,12 @@
 extern crate test;
 
 #[macro_use]
-extern crate throw;
+extern crate attempt;
 
 use test::Bencher;
 
 #[inline(never)]
-fn gives_throw_ok() -> Result<&'static str, throw::Error<&'static str>> {
+fn gives_throw_ok() -> Result<&'static str, attempt::Error<&'static str>> {
     test::black_box(Ok("ok"))
 }
 
@@ -18,14 +18,14 @@ fn gives_ok() -> Result<&'static str, &'static str> {
 }
 
 #[inline(never)]
-fn throws_up_ok() -> Result<&'static str, throw::Error<&'static str>> {
-    let ok_msg = test::black_box(up!(gives_throw_ok()));
+fn throws_up_ok() -> Result<&'static str, attempt::Error<&'static str>> {
+    let ok_msg = test::black_box(pass!(gives_throw_ok()));
     Ok(ok_msg)
 }
 
 #[inline(never)]
-fn throws_throw_ok() -> Result<&'static str, throw::Error<&'static str>> {
-    let ok_msg = test::black_box(throw!(gives_ok()));
+fn throws_throw_ok() -> Result<&'static str, attempt::Error<&'static str>> {
+    let ok_msg = test::black_box(attempt!(gives_ok()));
     Ok(ok_msg)
 }
 

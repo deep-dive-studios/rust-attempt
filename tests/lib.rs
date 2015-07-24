@@ -1,44 +1,44 @@
 #[macro_use]
-extern crate throw;
+extern crate attempt;
 
 
-fn throw_static_message() -> Result<(), throw::Error<&'static str>> {
-    throw_new!("hi");
+fn throw_static_message() -> Result<(), attempt::Error<&'static str>> {
+    pass_new!("hi");
 }
 
-fn throw1() -> Result<(), throw::Error<()>> {
-    throw_new!(());
+fn throw1() -> Result<(), attempt::Error<()>> {
+    pass_new!(());
 }
 
-fn throw2() -> Result<(), throw::Error<()>> {
-    up!(throw1());
+fn throw2() -> Result<(), attempt::Error<()>> {
+    pass!(throw1());
     Ok(())
 }
 
-fn throw3() -> Result<(), throw::Error<()>> {
-    up!(throw2());
+fn throw3() -> Result<(), attempt::Error<()>> {
+    pass!(throw2());
     Ok(())
 }
 
-fn gives_ok() -> Result<&'static str, throw::Error<&'static str>> {
+fn gives_ok() -> Result<&'static str, attempt::Error<&'static str>> {
     Ok("ok")
 }
 
-fn throws_ok() -> Result<&'static str, throw::Error<&'static str>> {
-    let ok_msg = up!(gives_ok());
+fn throws_ok() -> Result<&'static str, attempt::Error<&'static str>> {
+    let ok_msg = pass!(gives_ok());
     Ok(ok_msg)
 }
 
 mod mod_test {
-    use throw;
+    use attempt;
 
-    pub fn throws() -> Result<(), throw::Error<&'static str>> {
-        throw_new!("ahhhh");
+    pub fn throws() -> Result<(), attempt::Error<&'static str>> {
+        pass_new!("ahhhh");
     }
 }
 
-fn throws_into() -> Result<(), throw::Error<String>> {
-    throw!(Err("some static string"));
+fn throws_into() -> Result<(), attempt::Error<String>> {
+    attempt!(Err("some static string"));
     Ok(())
 }
 

@@ -1,9 +1,0 @@
-language: rust
-sudo: false
-rust:
-- stable
-- beta
-matrix:
-    include:
-    - rust: nightly
-      after_script: cargo bench --verbose

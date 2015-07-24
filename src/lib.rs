@@ -1,21 +1,21 @@
 #![deny(missing_docs)]
-#![doc(html_root_url = "https://dabo.guru/rust/throw/throw/")]
-//! Throw!
+#![doc(html_root_url = "https://dabo.guru/rust/attempt/attempt/")]
+//! Attempt!
 //! ------
 //!
-//! Throw is a new experimental rust error handling library, meant to assist and build on existing
+//! Attempt is a new experimental rust error handling library, meant to assist and build on existing
 //! error handling systems.
 //!
-//! Throw exports two structs, `throw::ErrorPoint` and `throw::Error`. `throw::Error` stores a
+//! Attempt exports two structs, `attempt::ErrorPoint` and `attempt::Error`. `attempt::Error` stores a
 //! single `original_error` variable which it is created from, and then a list of `ErrorPoint`s
-//! which starts out with the original point of creation with `throw!()`, and is added to every
-//! time you propagate the error upwards with `up!()`.
+//! which starts out with the original point of creation with `attempt!()`, and is added to every
+//! time you propagate the error upwards with `pass!()`.
 //!
-//! *Throw does not replace existing error handling systems*. The `throw::Error` type has a type
-//! parameter `E` which represents an internal error type stored. `throw::Error` just wraps your
+//! *Attempt does not replace existing error handling systems*. The `attempt::Error` type has a type
+//! parameter `E` which represents an internal error type stored. `attempt::Error` just wraps your
 //! error type and stores ErrorPoints alongside it.
 //!
-//! Throw helps you better keep track of your errors. Instead of seeing a generic "No such file or
+//! Attempt helps you better keep track of your errors. Instead of seeing a generic "No such file or
 //! directory" message, you get a stack trace of functions which propagated the error as well.
 //!
 //! Instead of:
@@ -35,34 +35,34 @@
 //!
 //! ---
 //!
-//! Using throw!
+//! Using attempt!
 //! ---
 //!
-//! The main way you use throw is through two macros, `throw!()` and `up!()`. `throw!()` is used
-//! when you have a regular (non-throw) result coming from some library function that you want to
-//! propagate upwards in case of an error. `up!()` is used when you have an error which was
-//! created using `throw!()` in a sub-function which you want to add an error point to and
+//! The main way you use attempt is through two macros, `attempt!()` and `pass!()`. `attempt!()` is used
+//! when you have a regular (non-attempt) result coming from some library function that you want to
+//! propagate upwards in case of an error. `pass!()` is used when you have an error which was
+//! created using `attempt!()` in a sub-function which you want to add an error point to and
 //! propagate upwards.
 //!
-//! Here's an example of throw in action:
+//! Here's an example of attempt in action:
 //!
 //! ```rust
 //! #[macro_use]
-//! extern crate throw;
+//! extern crate attempt;
 //!
 //! use std::io::prelude::*;
 //! use std::io;
 //! use std::fs::File;
 //!
-//! fn read_log() -> Result<String, throw::Error<io::Error>> {
-//!     let mut file = throw!(File::open("some_file.log"));
+//! fn read_log() -> Result<String, attempt::Error<io::Error>> {
+//!     let mut file = attempt!(File::open("some_file.log"));
 //!     let mut buf = String::new();
-//!     throw!(file.read_to_string(&mut buf));
+//!     attempt!(file.read_to_string(&mut buf));
 //!     Ok((buf))
 //! }
 //!
-//! fn do_things() -> Result<(), throw::Error<io::Error>> {
-//!     let log_contents = up!(read_log());
+//! fn do_things() -> Result<(), attempt::Error<io::Error>> {
+//!     let log_contents = pass!(read_log());
 //!     println!("Log contents: {}", log_contents);
 //!
 //!     Ok(())
@@ -82,7 +82,7 @@
 //! ```
 //!
 //! This simple program behaves exactly as if `Result<_, io::Error>` directly when it functions
-//! correctly. When the program encounters is when throw really shines.  This will result in an
+//! correctly. When the program encounters is when attempt really shines.  This will result in an
 //! error message:
 //!
 //! ```text
@@ -91,24 +91,24 @@
 //!    at 9:19 in main (src/main.rs)
 //! ```
 //!
-//! These stack traces are stored inside throw::Error, and are recorded automatically when
-//! `throw!()` or `up!()` returns an Err value.
+//! These stack traces are stored inside attempt::Error, and are recorded automatically when
+//! `attempt!()` or `pass!()` returns an Err value.
 //!
 //! In each `at` line, the `16:23` represents `line_num:column_num`, the `main` represents the
 //! module path (for example `my_program::sub_module`), and `src/main.rs` represents the path of
-//! the file in which `throw!()` was used in.
+//! the file in which `attempt!()` was used in.
 //!
 //! ---
 //!
-//! Throwing directly from a function is also supported, using `throw_new!()`:
+//! Throwing directly from a function is also supported, using `pass_new!()`:
 //!
 //! ```
 //! # #[macro_use]
-//! # extern crate throw;
-//! fn possibly_fails() -> Result<(), throw::Error<&'static str>> {
+//! # extern crate attempt;
+//! fn possibly_fails() -> Result<(), attempt::Error<&'static str>> {
 //!     if true {
-//!         // throw_new!() will always return directly
-//!         throw_new!("oops");
+//!         // pass_new!() will always return directly
+//!         pass_new!("oops");
 //!     }
 //!
 //!     Ok(())
@@ -128,16 +128,16 @@
 //!    at 6:8 in main (src/main.rs)
 //! ```
 //!
-//! `throw_new!()` differs from `throw!()` in that it takes a parameter directly to pass to a
-//! `throw::Error`, rather than a `Result<>` to match on. `throw_new!()` will always return
+//! `pass_new!()` differs from `attempt!()` in that it takes a parameter directly to pass to a
+//! `attempt::Error`, rather than a `Result<>` to match on. `pass_new!()` will always return
 //! directly from the function.
 
 use std::fmt;
 
-/// Result alias for a result containing a throw::Error.
+/// Result alias for a result containing a attempt::Error.
 pub type Result<T, E> = std::result::Result<T, Error<E>>;
 
-/// Represents a location at which an error was thrown via throw!()
+/// Represents a location at which an error was thrown via attempt!()
 pub struct ErrorPoint {
     line: u32,
     column: u32,
@@ -146,25 +146,25 @@ pub struct ErrorPoint {
 }
 
 impl ErrorPoint {
-    /// The line throw!() occurred at, retrieved by line!()
+    /// The line attempt!() occurred at, retrieved by line!()
     #[inline]
     pub fn line(&self) -> u32 {
         self.line
     }
 
-    /// The column throw!() occurred at, retrieved by column!()
+    /// The column attempt!() occurred at, retrieved by column!()
     #[inline]
     pub fn column(&self) -> u32 {
         self.column
     }
 
-    /// The module throw!() occurred in, retrieved by module_path!()
+    /// The module attempt!() occurred in, retrieved by module_path!()
     #[inline]
     pub fn module_path(&self) -> &'static str {
         self.module_path
     }
 
-    /// The file throw!() occurred in, retrieved by file!()
+    /// The file attempt!() occurred in, retrieved by file!()
     #[inline]
     pub fn file(&self) -> &'static str {
         self.file
@@ -252,12 +252,12 @@ impl<E> fmt::Debug for Error<E> where E: fmt::Debug {
 }
 
 #[macro_export]
-macro_rules! up {
+macro_rules! pass {
     ($e:expr) => (
         match $e {
             Ok(v) => v,
             Err(e) => {
-                // re-assignment for a better error message if up!() is used incorrectly
+                // re-assignment for a better error message if pass!() is used incorrectly
                 let mut e: $crate::Error<_> = e.transform();
                 e.__push_point($crate::ErrorPoint::__construct(
                     line!(),
@@ -272,17 +272,17 @@ macro_rules! up {
 }
 
 #[macro_export]
-macro_rules! throw {
+macro_rules! attempt {
     ($e:expr) => (
         match $e {
             Ok(v) => v,
-            Err(e) => throw_new!(e),
+            Err(e) => pass_new!(e),
         }
     );
 }
 
 #[macro_export]
-macro_rules! throw_new {
+macro_rules! pass_new {
     ($e:expr) => ({
         let mut e: $crate::Error<_> = $crate::Error::new($e.into());
         e.__push_point($crate::ErrorPoint::__construct(
